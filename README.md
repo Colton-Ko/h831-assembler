@@ -42,7 +42,7 @@ The following examples assumed that you have changed your working directory to t
 python3 h8as.py demo/memtest.asm config/ucode.map -o memtest.bin
 ```
 
-###### Example 1, Compiling `demo/memtest.asm`, without writing the compiled binary
+###### Example 2, Compiling `demo/15x17.asm`, without writing the compiled binary
 
 ```bash
 python3 h8as.py demo/15x17.asm config/ucode.map
