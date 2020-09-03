@@ -36,13 +36,9 @@ optional arguments:
 
 The following examples assumed that you have changed your working directory to the downloaded repository folder.
 
-###### Example 1, Compiling `demo/memtest.asm`, write output to `memtest.bin`
-
 ```bash
 python3 h8as.py demo/memtest.asm config/ucode.map -o memtest.bin
 ```
-
-###### Example 1, Compiling `demo/memtest.asm`, without writing the compiled binary
 
 ```bash
 python3 h8as.py demo/15x17.asm config/ucode.map
