@@ -61,18 +61,15 @@ def convertLabelsToPAddr(assembly):
                       
         return [re.sub(TRAILING_REGEX, NOTHING, line) for line in assembly]
 
-def convertLiteralToBinary(arg):
-        return
-
 def determineLiteralType(instr,layout, argID):
         typeDescriptor = layout[instr][argID]
 
         pinStart = int(re.findall(r'\d+', typeDescriptor)[0])
         pinEnd = int(re.findall(r'\d+', typeDescriptor)[1])
 
-        maxValue = pow(2,pinEnd-pinStart+1)
-        flipRequire = False if typeDescriptor.find("[^") == -1 else True
-        return (pinStart, pinEnd, maxValue, flipRequire)
+        bits = pinEnd - pinStart+1
+        flipRequire = True if typeDescriptor.find("[^") == -1 else False
+        return (pinStart, pinEnd, bits, flipRequire)
 
 def parseArgs(instr, args, layout,ln):
         output = 0
@@ -83,13 +80,19 @@ def parseArgs(instr, args, layout,ln):
                 except IndexError:
                         print(f'{ln: >2}: At {instr + " " +", ".join(args)} -> Not enough arguments supplied. Probably missing source and dest address?')
                         quit()
-                if literal > typeParameters[2]:   #       If literal is oversized
+                if literal > pow(2, typeParameters[2]):   #       If literal is oversized
                         print(f'{ln: >2}: At {instr + " " +", ".join(args)} -> The literal {literal} is too big. At most {typeParameters[2]} is accepted.')
                         quit()
-                argBinary = str(bin(literal)).replace("0b", NOTHING)
-                argBinary = reversed(argBinary) if typeParameters[3] else argBinary
+
+                argBinary = str(bin(literal)).replace("0b", NOTHING)            # Replace 0b suffix
+                argBinary = f"{argBinary:0>{typeParameters[2]}}"                # Add padding
+
+                if typeParameters[3]:                                           # Flip if required
+                        argBinary = argBinary[::-1]
+
                 for offset, n in enumerate(argBinary):
-                        output += int(n) * pow(2,(offset+typeParameters[0]))
+                        output += int(n) * pow(2,(offset + typeParameters[0]))
+
         return output
 
 def assembleArgs(instr, args, layout,ln):
@@ -97,7 +100,7 @@ def assembleArgs(instr, args, layout,ln):
         return parseArgs(instr, args, layout,ln)
 
 def assembleInstruction(assembly, layout, output=''):
-        print(" "*4+"0"*72)
+        # print(" "*4+"0"*72)
         code = list()
         for ln, line in enumerate(assembly):
                 instr = re.search(INSTRUCTION_REGEX, line).group(0).strip(' ')
@@ -108,6 +111,7 @@ def assembleInstruction(assembly, layout, output=''):
                 opcode += assembleArgs(instr, line.replace(instr + ' ',''),layout,ln)
                 binCode = f'{str(bin(opcode)).replace("0b",NOTHING)[::-1]:0<68}'
                 print(f'{ln: >2}: 0000{binCode} ({hex(int(binCode,2))})')
+                # print(f"{ln: >2}: {', '.join(map(str, [m.start() for m in re.finditer('1', binCode)]))}")
                 code.append(binCode)
         
         if output == '':
