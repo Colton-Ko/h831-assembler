@@ -48,6 +48,10 @@ python3 h8as.py demo/memtest.asm config/ucode.map -o memtest.bin
 python3 h8as.py demo/15x17.asm config/ucode.map
 ```
 
+#### Assembly guide
+
+Check out "**h831 Assembly Programming Guide**", or download it in `pdfdocs/h831 Assembly Programming Guide.pdf`.
+
 #### Running on H831
 
 Available soon.
