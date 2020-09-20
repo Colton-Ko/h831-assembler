@@ -18,6 +18,7 @@ DEST = 1
 SRC0 = 2
 SRC1 = 3
 ARGS = 4
+BIN_DELIMINATOR = 238                   # Use EE as deliminiator
 
 def loadMapFile(mapFile):
         with open(mapFile, newline='') as csvfile:
@@ -99,8 +100,13 @@ def assembleArgs(instr, args, layout,ln):
         args = args.replace(" ","").split(',')
         return parseArgs(instr, args, layout,ln)
 
-def assembleInstruction(assembly, layout, output=''):
-        # print(" "*4+"0"*72)
+def assembleInstruction(assembly, layout, output='', showPins=False):
+
+        if showPins:
+                print(f'{" Pin configuration ":-^45}')
+        else:
+                print(" "*4+"0"*72)
+
         code = list()
         for ln, line in enumerate(assembly):
                 instr = re.search(INSTRUCTION_REGEX, line).group(0).strip(' ')
@@ -110,26 +116,30 @@ def assembleInstruction(assembly, layout, output=''):
                         opcode += pow(2,n)
                 opcode += assembleArgs(instr, line.replace(instr + ' ',''),layout,ln)
                 binCode = f'{str(bin(opcode)).replace("0b",NOTHING)[::-1]:0<68}'
-                print(f'{ln: >2}: 0000{binCode} ({hex(int(binCode,2))})')
-                # print(f"{ln: >2}: {', '.join(map(str, [m.start() for m in re.finditer('1', binCode)]))}")
-                code.append(binCode)
+
+                if showPins:
+                        print(f"{ln: >2}: {', '.join(map(str, [m.start() for m in re.finditer('1', binCode)]))}") # Show pins
+                else:
+                        print(f'{ln: >2}: 0000{binCode} ({hex(int(binCode,2))})')
+                
+                code.append(bytearray([m.start() for m in re.finditer('1', binCode)] + [BIN_DELIMINATOR]))
         
         if output == '':
                 quit()
         else:
                 file = open(output, "wb")
                 for line in code:
-                        data = int(line,2).to_bytes(72, 'big')
+                        data = line
                         file.write(data)
                 file.close()
         return
 
-def assemble(input, output, mapFile):
+def assemble(input, output, mapFile, pin):
         layout = loadMapFile(mapFile)
         assembly = loadAssembly(input)
         assembly = convertLabelsToPAddr(assembly)
         [print(f'{ln: >2}: {line}') for ln, line in enumerate(assembly)]
-        assembleInstruction(assembly,layout,output)
+        assembleInstruction(assembly, layout, output, showPins=pin)
         return
 
 def showHelp():
@@ -146,6 +156,7 @@ def showHelp():
         parser = ArgumentParser()
         parser.add_argument(help="File for assembly program", dest="IN_FILENAME", default="", type=str)
         parser.add_argument(help="Microcode descriptor file", dest="MAPFILE", default="", type=str)
+        parser.add_argument("-p", "--pin", action="store_true", help="Show pin code instead of binary")
         parser.add_argument("-o", help="File for assembler output", dest="OUT_FILENAME", default="", type=str)
 
         args = parser.parse_args()
@@ -153,6 +164,7 @@ def showHelp():
         inputFile = args.IN_FILENAME
         outputFile = args.OUT_FILENAME
         mapFile = args.MAPFILE
+        showPins = args.pin 
 
         if inputFile == NOTHING or mapFile == NOTHING:
                 parser.print_help()
@@ -162,6 +174,6 @@ def showHelp():
         print(f'{"Mapfile:": <30}{mapFile}')
         print(f'{"Output:": <30}{outputFile}')
         
-        assemble(inputFile, outputFile, mapFile)
+        assemble(inputFile, outputFile, mapFile, showPins)
         
 showHelp()

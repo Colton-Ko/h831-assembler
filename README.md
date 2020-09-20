@@ -50,9 +50,52 @@ Check out "**h831 Assembly Programming Guide**", or download it in `pdfdocs/h831
 
 #### Running on H831
 
-Available soon.
+Use `hfpt.py`. 
 
+##### Steps
 
+1. Compile the binary first. Subsititude your filenames in angled brakets.
+
+	```shell
+	python3 h8as.py <assembly code file> config/ucode.map -o <binary>
+	```
+
+2. Run flash programming tool to generate a mcfunction file, which is used to program the computer easily. You will get a `romflash.mcfunction` file.
+
+	```shell
+	python3 hfpt.py <binary>
+	```
+	
+3. Make sure the datapack prototype for hfpt is installed.
+
+4. Subsititude the `romflash.mcfunction` in the datapack. Reload your world using `/reload`.
+
+5. Stand on the programming spot and run these commands
+
+		![2020-09-20_22.49.30](README.assets/2020-09-20_22.49.30-0613393.png)
+
+	```
+	/function hfpt:romerase
+	/function hfpt:romflash
+	```
+
+6. Your program should be up and running after you have turned on the **PC** (Program counter).
+
+	1. Oscillator (Clock) turned on
+
+		![2020-09-20_22.50.42](README.assets/2020-09-20_22.50.42-0613469.png)
+
+	2. Program Counter Enabled
+
+		<img src="README.assets/2020-09-20_22.50.51.png" alt="2020-09-20_22.50.51"  />
+
+## Component revisions
+
+| Component              | Revision | Date       |
+| ---------------------- | -------- | ---------- |
+| Microcode/Pin layout   | dev-a2e  | 2020-09-02 |
+| Assembler              | dev-a5e  | 2020-09-05 |
+| Flash Programming Tool | dev-a1   | 2020-09-05 |
 
 
 
